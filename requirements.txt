@@ -1,0 +1,9 @@
+# YouTube Downloader Requirements
+
+# Core dependency per il download
+yt-dlp>=2024.8.6
+
+# FFmpeg è richiesto per la conversione audio/video
+# Su Windows, installare tramite:
+# scoop install ffmpeg
+# oppure scaricare da: https://github.com/BtbN/FFmpeg-Builds/releases
