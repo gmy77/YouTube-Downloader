@@ -98,6 +98,78 @@ python youtube_downloader.py
 3. Scegli formato e qualità
 4. Click su "SCARICA VIDEO"
 
+## 📦 Creare Eseguibile .exe
+
+Puoi trasformare l'applicazione in un file eseguibile `.exe` standalone per distribuirla facilmente senza richiedere Python installato.
+
+### Prerequisiti
+
+1. **Installa PyInstaller**:
+   ```bash
+   pip install pyinstaller
+   ```
+
+2. **Verifica FFmpeg**: Assicurati che FFmpeg sia installato (sarà comunque necessario sul PC di destinazione)
+
+### Metodo 1: Script Automatico (Raccomandato)
+
+Esegui uno dei seguenti script dalla directory del progetto:
+
+**PowerShell:**
+```powershell
+.\build_exe.ps1
+```
+
+**Batch (doppio click):**
+```
+build_exe.bat
+```
+
+Lo script farà automaticamente:
+- Verifica delle dipendenze
+- Pulizia delle directory precedenti
+- Creazione dell'eseguibile con PyInstaller
+- Verifica del risultato
+
+### Metodo 2: Comando Manuale
+
+Se preferisci creare l'eseguibile manualmente:
+
+```bash
+pyinstaller --clean --noconfirm youtube_downloader.spec
+```
+
+Oppure, senza file .spec:
+
+```bash
+pyinstaller --onefile --windowed --name "YouTubeDownloader" youtube_downloader.py
+```
+
+### Risultato
+
+L'eseguibile sarà creato nella cartella `dist/`:
+```
+dist/
+  └── YouTubeDownloader.exe  (circa 30-50 MB)
+```
+
+### Note Importanti
+
+- **FFmpeg richiesto**: L'eseguibile funziona, ma FFmpeg deve comunque essere installato sul PC dove viene eseguito
+- **Prima esecuzione lenta**: Il primo avvio potrebbe richiedere qualche secondo
+- **Antivirus**: Alcuni antivirus potrebbero segnalare falsi positivi per gli eseguibili PyInstaller
+- **Dimensione**: L'exe include Python e tutte le dipendenze, risultando in un file da 30-50 MB
+
+### Distribuzione
+
+Per distribuire l'applicazione:
+
+1. Copia `YouTubeDownloader.exe` dal folder `dist/`
+2. Assicurati che FFmpeg sia installato sul PC di destinazione
+3. Esegui l'exe con doppio click
+
+**Suggerimento**: Puoi creare un installer con NSIS o Inno Setup per distribuire insieme FFmpeg.
+
 ## 🎯 Scorciatoie
 
 Per avviare l'applicazione rapidamente, crea un file batch:
