@@ -154,6 +154,8 @@ class YouTubeDownloaderGUI:
                        value="video", style='Custom.TRadiobutton').pack(anchor=tk.W)
         ttk.Radiobutton(format_frame, text="Solo Audio (MP3)", variable=self.format_var,
                        value="audio", style='Custom.TRadiobutton').pack(anchor=tk.W)
+        ttk.Radiobutton(format_frame, text="Solo Sottotitoli", variable=self.format_var,
+                       value="subtitles", style='Custom.TRadiobutton').pack(anchor=tk.W)
 
         # Colonna 2: Qualità
         quality_frame = ttk.Frame(settings_grid, style='Card.TFrame')
@@ -327,6 +329,17 @@ class YouTubeDownloaderGUI:
                 }],
             })
             self.log("🎵 Modalità: Solo Audio (MP3)", 'info')
+        elif self.format_var.get() == 'subtitles':
+            # Solo sottotitoli - non scaricare video o audio
+            ydl_opts.update({
+                'skip_download': True,
+                'writesubtitles': True,
+                'writeautomaticsub': True,
+                'subtitleslangs': ['it', 'en', 'es', 'fr', 'de', 'pt', 'ru', 'ja', 'ko', 'zh-Hans', 'zh-Hant', 'ar'],
+                'subtitlesformat': 'srt/vtt/best',
+            })
+            self.log("📝 Modalità: Solo Sottotitoli (SRT/VTT)", 'info')
+            self.log("🌍 Lingue: IT, EN, ES, FR, DE, PT, RU, JA, KO, ZH, AR", 'info')
         else:
             # Qualità video
             quality = self.quality_var.get()
@@ -339,14 +352,14 @@ class YouTubeDownloaderGUI:
             ydl_opts['merge_output_format'] = 'mp4'
             self.log(f"🎬 Modalità: Video - Qualità: {quality}", 'info')
 
-        # Sottotitoli
-        if self.subtitles_var.get():
+        # Sottotitoli (solo se non siamo già in modalità solo sottotitoli)
+        if self.subtitles_var.get() and self.format_var.get() != 'subtitles':
             ydl_opts.update({
                 'writesubtitles': True,
                 'writeautomaticsub': True,
                 'subtitleslangs': ['it', 'en'],
             })
-            self.log("📝 Sottotitoli: Abilitati (IT, EN)", 'info')
+            self.log("📝 Sottotitoli aggiuntivi: Abilitati (IT, EN)", 'info')
 
         # Playlist
         if self.playlist_var.get():

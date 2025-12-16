@@ -10,8 +10,9 @@ Applicazione moderna con interfaccia grafica per scaricare video da YouTube in m
 - 🎨 **Interfaccia Grafica Moderna**: Design accattivante con tema scuro
 - 📹 **Download Video**: Scarica video in diverse qualità (1080p, 720p, 480p, 360p)
 - 🎵 **Estrazione Audio**: Converti video in MP3 ad alta qualità
+- 📝 **Solo Sottotitoli**: Scarica solo i sottotitoli in 12+ lingue (SRT/VTT)
 - 📑 **Supporto Playlist**: Scarica intere playlist con un click
-- 📝 **Sottotitoli**: Download automatico sottotitoli (IT/EN)
+- 🌍 **Sottotitoli Multilingua**: Download automatico sottotitoli in IT, EN, ES, FR, DE, PT, RU, JA, KO, ZH, AR
 - 📊 **Barra Progresso**: Visualizzazione in tempo reale del download
 - 📋 **Log Dettagliato**: Traccia completa delle operazioni
 - 📁 **Cartella Personalizzabile**: Scegli dove salvare i tuoi file
@@ -63,6 +64,7 @@ python youtube_downloader.py
 2. **Formato**:
    - Video + Audio: Scarica video completo
    - Solo Audio (MP3): Estrae solo l'audio in formato MP3
+   - Solo Sottotitoli: Scarica solo i sottotitoli in 12+ lingue (SRT/VTT)
 
 3. **Qualità**:
    - Migliore disponibile: Massima qualità disponibile
@@ -91,6 +93,12 @@ python youtube_downloader.py
 1. Incolla URL del video
 2. Seleziona "Solo Audio (MP3)"
 3. Click su "SCARICA VIDEO"
+
+#### Scaricare solo i sottotitoli:
+1. Incolla URL del video
+2. Seleziona "Solo Sottotitoli"
+3. Click su "SCARICA VIDEO"
+4. Verranno scaricati i sottotitoli disponibili in tutte le lingue (IT, EN, ES, FR, DE, PT, RU, JA, KO, ZH, AR)
 
 #### Scaricare una playlist:
 1. Incolla URL della playlist
@@ -225,6 +233,12 @@ L'autore non è responsabile per l'uso improprio di questo software.
 - **FFmpeg**: Conversione audio/video
 
 ## 📝 Changelog
+
+### v1.1.0 (2025-12-16)
+- **Nuova funzionalità**: Download solo sottotitoli
+- Supporto per 12+ lingue: IT, EN, ES, FR, DE, PT, RU, JA, KO, ZH (Hans/Hant), AR
+- Download sottotitoli in formato SRT e VTT
+- Ottimizzazione dell'interfaccia grafica
 
 ### v1.0.0 (2025-12-08)
 - Rilascio iniziale
