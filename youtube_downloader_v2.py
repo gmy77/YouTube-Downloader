@@ -544,14 +544,27 @@ class YouTubeDownloaderGUI:
         log_frame = ttk.Frame(self.content_area, style='Card.TFrame', padding="15")
         log_frame.pack(fill=tk.BOTH, expand=True)
 
-        ttk.Label(log_frame, text="📋 Log:", style='Card.TLabel',
-                 font=('Segoe UI', 10, 'bold')).pack(anchor=tk.W, pady=(0, 5))
+        # Header log con pulsante copia
+        log_header = tk.Frame(log_frame, bg=self.frame_color)
+        log_header.pack(fill=tk.X, pady=(0, 5))
+
+        ttk.Label(log_header, text="📋 Log:", style='Card.TLabel',
+                 font=('Segoe UI', 10, 'bold')).pack(side=tk.LEFT)
+
+        copy_log_btn = tk.Button(log_header, text="📋 Copia Log",
+                                command=self.copy_log_to_clipboard,
+                                bg=self.frame_color, fg=self.accent_color,
+                                font=('Segoe UI', 8, 'bold'),
+                                relief=tk.FLAT, bd=0, padx=10, pady=2,
+                                cursor='hand2')
+        copy_log_btn.pack(side=tk.RIGHT)
 
         self.log_text = scrolledtext.ScrolledText(log_frame, height=10,
                                                   bg=self.bg_color, fg=self.fg_color,
                                                   font=('Consolas', 9),
                                                   relief=tk.FLAT, bd=5,
-                                                  insertbackground=self.fg_color)
+                                                  insertbackground=self.fg_color,
+                                                  wrap=tk.WORD)
         self.log_text.pack(fill=tk.BOTH, expand=True)
 
         self.log_text.tag_config('info', foreground=self.accent_color)
@@ -1094,6 +1107,15 @@ class YouTubeDownloaderGUI:
             self.log_text.see(tk.END)
             self.root.update_idletasks()
 
+    def copy_log_to_clipboard(self):
+        """Copia tutto il contenuto del log nella clipboard"""
+        if hasattr(self, 'log_text'):
+            log_content = self.log_text.get("1.0", tk.END)
+            self.root.clipboard_clear()
+            self.root.clipboard_append(log_content)
+            self.root.update()
+            messagebox.showinfo("Copiato", "Log copiato nella clipboard!")
+
     def progress_hook(self, d):
         """Hook per aggiornare la progress bar"""
         if d['status'] == 'downloading':
@@ -1176,8 +1198,10 @@ class YouTubeDownloaderGUI:
                 'writesubtitles': True,
                 'writeautomaticsub': True,
                 'subtitleslangs': ['it', 'en'],
+                'ignoreerrors': True,  # Continua anche se i sottotitoli falliscono
             })
-            self.log("🧠 Knowledge Base: Abilitato", 'info')
+            self.log("🧠 Knowledge Base: Abilitato (sottotitoli opzionali)", 'info')
+            self.log("⚠️ Se errore 429: i sottotitoli saranno saltati, video scaricato comunque", 'info')
 
         # Playlist
         if self.playlist_var.get():
@@ -1272,20 +1296,32 @@ class YouTubeDownloaderGUI:
             self.db.add_video(video_data)
             self.log(f"💾 Video salvato nel database: {video_id}", 'success')
 
-            # Trova e salva sottotitoli
-            for lang in ['it', 'en']:
-                for ext in ['srt', 'vtt']:
-                    sub_path = os.path.join(output_path, f"{video_info.get('title')}.{lang}.{ext}")
-                    if os.path.exists(sub_path):
-                        with open(sub_path, 'r', encoding='utf-8') as f:
-                            sub_text = f.read()
-                            # Rimuovi timestamp e formattazione
-                            clean_text = re.sub(r'\d{2}:\d{2}:\d{2}[.,]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[.,]\d{3}', '', sub_text)
-                            clean_text = re.sub(r'\d+\n', '', clean_text)
-                            clean_text = ' '.join(clean_text.split())
+            # Trova e salva sottotitoli (opzionale - può fallire)
+            subtitles_found = False
+            try:
+                for lang in ['it', 'en']:
+                    for ext in ['srt', 'vtt']:
+                        sub_path = os.path.join(output_path, f"{video_info.get('title')}.{lang}.{ext}")
+                        if os.path.exists(sub_path):
+                            try:
+                                with open(sub_path, 'r', encoding='utf-8') as f:
+                                    sub_text = f.read()
+                                    # Rimuovi timestamp e formattazione
+                                    clean_text = re.sub(r'\d{2}:\d{2}:\d{2}[.,]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[.,]\d{3}', '', sub_text)
+                                    clean_text = re.sub(r'\d+\n', '', clean_text)
+                                    clean_text = ' '.join(clean_text.split())
 
-                            self.db.add_transcript(video_id, lang, clean_text)
-                            self.log(f"📝 Trascrizione salvata: {lang}", 'success')
+                                    self.db.add_transcript(video_id, lang, clean_text)
+                                    self.log(f"📝 Trascrizione salvata: {lang}", 'success')
+                                    subtitles_found = True
+                            except Exception as e:
+                                self.log(f"⚠️ Errore lettura sottotitolo {lang}: {e}", 'error')
+
+                if not subtitles_found and self.subtitles_var.get():
+                    self.log("⚠️ Nessun sottotitolo trovato (possibile errore 429 o non disponibili)", 'error')
+                    self.log("💡 Video salvato comunque - ricerca Knowledge Base limitata", 'info')
+            except Exception as e:
+                self.log(f"⚠️ Errore processing sottotitoli: {e}", 'error')
 
             # Genera Visual Summary se richiesto
             if self.auto_summary_var.get() and file_path and self.format_var.get() == 'video':
