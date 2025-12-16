@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-YouTube Downloader Premium v2.0
+YouTube Downloader Premium v2.1.0
 Applicazione avanzata con Knowledge Base ricercabile e Visual Summary
 """
 
@@ -219,7 +219,7 @@ class DatabaseManager:
 class YouTubeDownloaderGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("🎬 YouTube Downloader Premium v2.0")
+        self.root.title("🎬 YouTube Downloader Premium v2.1.0")
         self.root.geometry("1200x800")
         self.root.resizable(True, True)
 
@@ -377,7 +377,7 @@ class YouTubeDownloaderGUI:
         footer = tk.Frame(sidebar, bg=self.sidebar_color)
         footer.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
 
-        tk.Label(footer, text="v2.0.0",
+        tk.Label(footer, text="v2.1.0",
                 font=('Segoe UI', 8),
                 bg=self.sidebar_color,
                 fg=self.fg_color).pack()
@@ -571,7 +571,7 @@ class YouTubeDownloaderGUI:
         self.log_text.tag_config('success', foreground=self.success_color)
         self.log_text.tag_config('error', foreground=self.error_color)
 
-        self.log("✨ YouTube Downloader Premium v2.0 pronto!", 'success')
+        self.log("✨ YouTube Downloader Premium v2.1.0 pronto!", 'success')
 
     def show_library_section(self):
         """Mostra la sezione libreria con ricerca"""
@@ -1074,7 +1074,7 @@ class YouTubeDownloaderGUI:
                  font=('Segoe UI', 12, 'bold')).pack(anchor=tk.W, pady=(0, 15))
 
         about_text = """
-        YouTube Downloader Premium v2.0
+        YouTube Downloader Premium v2.1.0
 
         Funzionalità:
         • Download video, audio e sottotitoli

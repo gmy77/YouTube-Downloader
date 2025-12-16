@@ -1,12 +1,25 @@
-# 🎬 YouTube Downloader Premium v2.0
+# 🎬 YouTube Downloader Premium v2.1.0
 
 **Applicazione professionale con interfaccia moderna per scaricare video da YouTube, con Knowledge Base ricercabile e Visual Summary Generator integrati.**
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Version](https://img.shields.io/badge/Version-2.0.0-success.svg)
+![Version](https://img.shields.io/badge/Version-2.1.0-success.svg)
 
-## 🌟 Novità v2.0
+## 🌟 Novità v2.1.0
+
+### 📋 Copia Log con Un Click
+- **Pulsante "📋 Copia Log"**: Nuovo pulsante nell'area log per copiare tutto il contenuto
+- **Debugging facilitato**: Copia istantanea del log completo nella clipboard
+- **Un solo click**: Niente più selezioni manuali difficili
+
+### ⚠️ Gestione Intelligente Errori Sottotitoli
+- **Resilienza Errore 429**: Download continua anche se YouTube limita i sottotitoli
+- **Download garantito**: Video salvato comunque nel database anche senza sottotitoli
+- **Messaggi chiari**: Log dettagliato su stato sottotitoli e eventuali errori
+- **Graceful degradation**: Knowledge Base funziona anche senza trascrizioni
+
+## 🌟 Funzionalità v2.0
 
 ### 📚 Knowledge Base Ricercabile
 - **Database SQLite integrato**: Tutti i video scaricati vengono salvati con metadati completi
@@ -255,6 +268,20 @@ ffmpeg -version
 | Dimensione finestra | 900x700 | 1200x800 |
 
 ## 📝 Changelog Dettagliato
+
+### v2.1.0 (2025-12-16)
+**Bug Fix e Miglioramenti UX:**
+- 📋 **Nuovo**: Pulsante "Copia Log" per copiare tutto il log nella clipboard
+- ⚠️ **Fix**: Gestione errore 429 "Too Many Requests" sui sottotitoli YouTube
+- ✅ **Fix**: Download continua anche se sottotitoli non disponibili
+- 💾 **Fix**: Video salvato nel database anche senza trascrizioni
+- 📝 **Migliorato**: Messaggi di log più chiari e informativi
+- 🔧 **Migliorato**: Wrapping del testo nel log (wrap=WORD)
+- 🛡️ **Migliorato**: Error handling robusto per sottotitoli con try/except multipli
+
+**Feedback Utente:**
+- Risolto problema segnalato: impossibilità di copiare il log
+- Risolto problema segnalato: download falliva con errore 429 sottotitoli IT
 
 ### v2.0.0 (2025-12-16)
 **Novità Maggiori:**
