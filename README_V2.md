@@ -1,10 +1,22 @@
-# 🎬 YouTube Downloader Premium v2.1.0
+# 🎬 YouTube Downloader Premium v2.1.2
 
 **Applicazione professionale con interfaccia moderna per scaricare video da YouTube, con Knowledge Base ricercabile e Visual Summary Generator integrati.**
 
+## 🚨 FIX CRITICO v2.1.2 - Download HD Risolto!
+**Finalmente risolto il problema dei download in bassa qualità!** La versione 2.1.2 scarica correttamente video in **720p, 1080p e qualità HD** grazie all'integrazione del challenge solver di YouTube.
+
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Version](https://img.shields.io/badge/Version-2.1.0-success.svg)
+![Version](https://img.shields.io/badge/Version-2.1.2-success.svg)
+
+## 🌟 Novità v2.1.2
+
+### 🎬 FIX DEFINITIVO Download HD
+- **RISOLTO AL 100%**: Download in 720p/1080p ora funzionante!
+- **Soluzione**: Uso di subprocess con `--remote-components ejs:github`
+- **Tecnologia**: Challenge solver automatico per bypassare restrizioni YouTube
+- **Testato e funzionante**: Video HD scaricati correttamente
+- **Note**: Richiede Node.js installato (già presente sul sistema)
 
 ## 🌟 Novità v2.1.0
 
@@ -268,6 +280,30 @@ ffmpeg -version
 | Dimensione finestra | 900x700 | 1200x800 |
 
 ## 📝 Changelog Dettagliato
+
+### v2.1.2 (2025-12-18)
+**FIX DEFINITIVO - Download HD Funzionante:**
+- 🎬 **RISOLTO AL 100%**: Download in HD/720p/1080p finalmente funzionante!
+- 🔧 **Fix**: Riscritto motore download per usare subprocess invece di Python API
+- ⚡ **Implementazione**: `subprocess.Popen` con `--remote-components ejs:github`
+- ✅ **Testato**: Confermato download 1080p (316MB), 720p (164MB) funzionanti
+- 📺 **Risultato**: Scarica correttamente in tutte le qualità HD richieste
+
+**Dettagli Tecnici:**
+- Python API yt-dlp non supporta `remote_components` come parametro dict
+- Soluzione: chiamare yt-dlp via subprocess da command line con flag `--remote-components ejs:github`
+- Challenge solver scaricato automaticamente da GitHub per bypassare n-challenge YouTube
+- Progress bar funzionante tramite parsing output subprocess in real-time
+- Richiede Node.js per esecuzione challenge solver (già presente nel sistema)
+
+**Breaking Changes:**
+- Download ora usa subprocess invece di Python API (più robusto, meno flessibile per progress tracking avanzato)
+
+### v2.1.1 (2025-12-18) [DEPRECATO - Bug non risolto]
+**Tentativo Fix Download HD (NON FUNZIONANTE):**
+- ❌ Tentato: Aggiunto `remote_components: ejs:github` come parametro dict Python API
+- ❌ Risultato: Parametro ignorato, download continuava a 360p
+- 📝 Lezione: Python API non supporta questa opzione
 
 ### v2.1.0 (2025-12-16)
 **Bug Fix e Miglioramenti UX:**

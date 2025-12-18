@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-YouTube Downloader Premium v2.1.0
+YouTube Downloader Premium v2.1.2
 Applicazione avanzata con Knowledge Base ricercabile e Visual Summary
+FIX CRITICO: Download HD funzionante con subprocess + remote_components
 """
 
 import tkinter as tk
@@ -219,7 +220,7 @@ class DatabaseManager:
 class YouTubeDownloaderGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("🎬 YouTube Downloader Premium v2.1.0")
+        self.root.title("🎬 YouTube Downloader Premium v2.1.2")
         self.root.geometry("1200x800")
         self.root.resizable(True, True)
 
@@ -377,7 +378,7 @@ class YouTubeDownloaderGUI:
         footer = tk.Frame(sidebar, bg=self.sidebar_color)
         footer.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
 
-        tk.Label(footer, text="v2.1.0",
+        tk.Label(footer, text="v2.1.2",
                 font=('Segoe UI', 8),
                 bg=self.sidebar_color,
                 fg=self.fg_color).pack()
@@ -571,7 +572,8 @@ class YouTubeDownloaderGUI:
         self.log_text.tag_config('success', foreground=self.success_color)
         self.log_text.tag_config('error', foreground=self.error_color)
 
-        self.log("✨ YouTube Downloader Premium v2.1.0 pronto!", 'success')
+        self.log("✨ YouTube Downloader Premium v2.1.2 pronto!", 'success')
+        self.log("🎬 FIX: Download HD/720p/1080p ora funzionante!", 'info')
 
     def show_library_section(self):
         """Mostra la sezione libreria con ricerca"""
@@ -1074,13 +1076,14 @@ class YouTubeDownloaderGUI:
                  font=('Segoe UI', 12, 'bold')).pack(anchor=tk.W, pady=(0, 15))
 
         about_text = """
-        YouTube Downloader Premium v2.1.0
+        YouTube Downloader Premium v2.1.2
 
         Funzionalità:
         • Download video, audio e sottotitoli
         • Knowledge Base con ricerca full-text
         • Visual Summary Generator
         • Database SQLite integrato
+        • Fix HD: Download in 720p/1080p funzionante
 
         Creato con ❤️ da Claude Code per Gimmy
         """
@@ -1116,20 +1119,24 @@ class YouTubeDownloaderGUI:
             self.root.update()
             messagebox.showinfo("Copiato", "Log copiato nella clipboard!")
 
+    def strip_ansi_codes(self, text):
+        """Rimuove tutti i codici ANSI di escape dal testo"""
+        ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
+        return ansi_escape.sub('', text)
+
     def progress_hook(self, d):
         """Hook per aggiornare la progress bar"""
         if d['status'] == 'downloading':
             try:
-                percent_str = d.get('_percent_str', '0%').strip()
-                percent_str = percent_str.replace('\x1b[0;94m', '').replace('\x1b[0m', '')
+                percent_str = self.strip_ansi_codes(d.get('_percent_str', '0%').strip())
                 percent = float(percent_str.replace('%', ''))
 
                 self.progress_var.set(percent)
 
-                downloaded = d.get('_downloaded_bytes_str', 'N/A')
-                total = d.get('_total_bytes_str', 'N/A')
-                speed = d.get('_speed_str', 'N/A')
-                eta = d.get('_eta_str', 'N/A')
+                downloaded = self.strip_ansi_codes(d.get('_downloaded_bytes_str', 'N/A'))
+                total = self.strip_ansi_codes(d.get('_total_bytes_str', 'N/A'))
+                speed = self.strip_ansi_codes(d.get('_speed_str', 'N/A'))
+                eta = self.strip_ansi_codes(d.get('_eta_str', 'N/A'))
 
                 status = f"⬇️ {percent:.1f}% - {downloaded}/{total} - {speed} - ETA: {eta}"
                 self.status_label.config(text=status)
@@ -1140,7 +1147,7 @@ class YouTubeDownloaderGUI:
             self.status_label.config(text="✅ Download completato!")
 
     def download_video(self):
-        """Funzione per scaricare il video"""
+        """Funzione per scaricare il video - USA SUBPROCESS per supporto HD"""
         url = self.url_var.get().strip()
 
         if not url:
@@ -1153,96 +1160,114 @@ class YouTubeDownloaderGUI:
         output_path = self.download_path.get()
         os.makedirs(output_path, exist_ok=True)
 
-        # Opzioni base
-        ydl_opts = {
-            'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
-            'progress_hooks': [self.progress_hook],
-            'quiet': False,
-            'no_warnings': False,
-        }
+        # Costruiamo il comando yt-dlp con --remote-components per HD
+        # Questo è l'UNICO modo per ottenere formati HD con YouTube moderno
+        cmd = [
+            'yt-dlp',
+            '--remote-components', 'ejs:github',  # Challenge solver per HD
+            '--newline',  # Progress su righe separate
+            '-o', os.path.join(output_path, '%(title)s.%(ext)s'),
+            '--write-thumbnail',  # Download thumbnail
+        ]
 
         # Formato
         if self.format_var.get() == 'audio':
-            ydl_opts.update({
-                'format': 'bestaudio/best',
-                'postprocessors': [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '192',
-                }],
-            })
+            cmd.extend(['-f', 'bestaudio/best'])
+            cmd.extend(['-x', '--audio-format', 'mp3', '--audio-quality', '192K'])
             self.log("🎵 Modalità: Solo Audio (MP3)", 'info')
         elif self.format_var.get() == 'subtitles':
-            ydl_opts.update({
-                'skip_download': True,
-                'writesubtitles': True,
-                'writeautomaticsub': True,
-                'subtitleslangs': ['it', 'en', 'es', 'fr', 'de', 'pt', 'ru', 'ja', 'ko', 'zh-Hans', 'zh-Hant', 'ar'],
-                'subtitlesformat': 'srt/vtt/best',
-            })
+            cmd.extend(['--skip-download', '--write-subs', '--write-auto-subs'])
+            cmd.extend(['--sub-langs', 'it,en,es,fr,de,pt,ru,ja,ko,zh-Hans,zh-Hant,ar'])
+            cmd.extend(['--sub-format', 'srt/vtt/best'])
             self.log("📝 Modalità: Solo Sottotitoli", 'info')
         else:
             quality = self.quality_var.get()
             if quality == 'best':
                 format_string = 'bestvideo+bestaudio/best'
             else:
-                format_string = f'bestvideo[height<={quality}]+bestaudio/best[height<={quality}]'
+                format_string = f'bestvideo[height<={quality}]+bestaudio/bestvideo+bestaudio/best'
 
-            ydl_opts['format'] = format_string
-            ydl_opts['merge_output_format'] = 'mp4'
+            cmd.extend(['-f', format_string])
+            cmd.extend(['--merge-output-format', 'mp4'])
             self.log(f"🎬 Modalità: Video - Qualità: {quality}", 'info')
 
         # Sottotitoli per Knowledge Base
         if self.subtitles_var.get() and self.format_var.get() != 'subtitles':
-            ydl_opts.update({
-                'writesubtitles': True,
-                'writeautomaticsub': True,
-                'subtitleslangs': ['it', 'en'],
-                'ignoreerrors': True,  # Continua anche se i sottotitoli falliscono
-            })
+            cmd.extend(['--write-subs', '--write-auto-subs', '--sub-langs', 'it,en'])
+            cmd.append('--ignore-errors')  # Continua se sottotitoli falliscono
             self.log("🧠 Knowledge Base: Abilitato (sottotitoli opzionali)", 'info')
-            self.log("⚠️ Se errore 429: i sottotitoli saranno saltati, video scaricato comunque", 'info')
 
         # Playlist
         if self.playlist_var.get():
-            ydl_opts['noplaylist'] = False
+            cmd.append('--yes-playlist')
             self.log("📑 Modalità Playlist: Attiva", 'info')
         else:
-            ydl_opts['noplaylist'] = True
+            cmd.append('--no-playlist')
 
-        # Download thumbnail
-        ydl_opts['writethumbnail'] = True
+        # Aggiungi URL
+        cmd.append(url)
 
         try:
             self.log(f"🔗 URL: {url}", 'info')
-            self.log("🚀 Inizio download...", 'info')
+            self.log("🚀 Inizio download con challenge solver HD...", 'info')
+            self.log(f"🔧 Comando: yt-dlp --remote-components ejs:github ...", 'info')
 
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(url, download=False)
+            # Esegui yt-dlp come subprocess
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
+                encoding='utf-8',
+                errors='replace'
+            )
 
-                if 'entries' in info:
-                    video_count = len(info['entries'])
-                    self.log(f"📑 Playlist: {video_count} video", 'info')
-                    videos_to_process = info['entries']
-                else:
-                    self.log(f"📺 Titolo: {info.get('title', 'N/A')}", 'info')
-                    videos_to_process = [info]
+            # Leggi output per progress
+            for line in process.stdout:
+                line = line.strip()
+                if line:
+                    self.log(line, 'info')
 
-                # Download
-                ydl.download([url])
+                    # Parse progress
+                    if '[download]' in line and '%' in line:
+                        try:
+                            # Cerca pattern "X.X%"
+                            match = re.search(r'(\d+\.?\d*)%', line)
+                            if match:
+                                percent = float(match.group(1))
+                                self.progress_var.set(percent)
+                                self.status_label.config(text=f"⬇️ Download: {percent:.1f}%")
+                                self.root.update_idletasks()
+                        except:
+                            pass
 
-                # Salva nel database
+            process.wait()
+
+            if process.returncode == 0:
+                self.log("✅ DOWNLOAD COMPLETATO!", 'success')
+                self.status_label.config(text="✅ Download completato!")
+                self.progress_var.set(100)
+
+                # Salva nel database se richiesto
                 if self.subtitles_var.get():
-                    for video_info in videos_to_process:
-                        if not video_info:
-                            continue
-                        self.save_to_database(video_info, output_path)
+                    self.log("💾 Salvataggio nel database...", 'info')
+                    # Usa yt-dlp API solo per ottenere info (senza download)
+                    try:
+                        with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+                            info = ydl.extract_info(url, download=False)
+                            if info:
+                                if 'entries' in info:
+                                    for video_info in info['entries']:
+                                        if video_info:
+                                            self.save_to_database(video_info, output_path)
+                                else:
+                                    self.save_to_database(info, output_path)
+                    except Exception as e:
+                        self.log(f"⚠️ Errore salvataggio database: {e}", 'error')
 
-            self.log("✅ DOWNLOAD COMPLETATO!", 'success')
-            self.status_label.config(text="✅ Download completato!")
-            self.progress_var.set(100)
-
-            messagebox.showinfo("Successo", f"Download completato!\n\nFile in: {output_path}")
+                messagebox.showinfo("Successo", f"Download completato!\n\nFile in: {output_path}")
+            else:
+                raise Exception(f"yt-dlp terminato con errore (code {process.returncode})")
 
         except Exception as e:
             error_msg = str(e)
