@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-YouTube Downloader Premium v2.1.2
+YouTube Downloader Premium v2.1.3
 Applicazione avanzata con Knowledge Base ricercabile e Visual Summary
 FIX CRITICO: Download HD funzionante con subprocess + remote_components
+NEW: Sezione LOG separata con interfaccia grande e leggibile
 """
 
 import tkinter as tk
@@ -220,7 +221,7 @@ class DatabaseManager:
 class YouTubeDownloaderGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("🎬 YouTube Downloader Premium v2.1.2")
+        self.root.title("🎬 YouTube Downloader Premium v2.1.3")
         self.root.geometry("1200x800")
         self.root.resizable(True, True)
 
@@ -259,6 +260,9 @@ class YouTubeDownloaderGUI:
 
         # Crea UI principale
         self.create_main_layout()
+
+        # Inizializza widget log (globale, sempre disponibile)
+        self.setup_log_widget()
 
         # Crea directory di default
         os.makedirs(self.download_path.get(), exist_ok=True)
@@ -326,6 +330,29 @@ class YouTubeDownloaderGUI:
                        borderwidth=0,
                        thickness=20)
 
+    def setup_log_widget(self):
+        """Inizializza il widget log (sempre disponibile per logging)"""
+        # Crea un frame nascosto per contenere il log
+        self.log_container = tk.Frame(self.root, bg=self.bg_color)
+
+        # Crea il widget log (non ancora visualizzato)
+        self.log_text = scrolledtext.ScrolledText(self.log_container,
+                                                  bg=self.bg_color, fg=self.fg_color,
+                                                  font=('Consolas', 10),
+                                                  relief=tk.FLAT, bd=5,
+                                                  insertbackground=self.fg_color,
+                                                  wrap=tk.WORD)
+
+        # Configura i tag per i colori
+        self.log_text.tag_config('info', foreground=self.accent_color)
+        self.log_text.tag_config('success', foreground=self.success_color)
+        self.log_text.tag_config('error', foreground=self.error_color)
+
+        # Log iniziale
+        self.log("✨ YouTube Downloader Premium v2.1.3 pronto!", 'success')
+        self.log("📋 NEW: Sezione LOG separata con interfaccia grande!", 'info')
+        self.log("🎬 FIX: Download HD/720p/1080p ora funzionante!", 'info')
+
     def create_main_layout(self):
         """Crea il layout principale con sidebar"""
         # Container principale
@@ -367,6 +394,7 @@ class YouTubeDownloaderGUI:
             ("⬇️", "Download", "download"),
             ("📚", "Libreria", "library"),
             ("🎨", "Summary", "summary"),
+            ("📋", "LOG", "log"),
             ("⚙️", "Impostazioni", "settings")
         ]
 
@@ -378,7 +406,7 @@ class YouTubeDownloaderGUI:
         footer = tk.Frame(sidebar, bg=self.sidebar_color)
         footer.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
 
-        tk.Label(footer, text="v2.1.2",
+        tk.Label(footer, text="v2.1.3",
                 font=('Segoe UI', 8),
                 bg=self.sidebar_color,
                 fg=self.fg_color).pack()
@@ -422,6 +450,8 @@ class YouTubeDownloaderGUI:
             self.show_library_section()
         elif section == "summary":
             self.show_summary_section()
+        elif section == "log":
+            self.show_log_section()
         elif section == "settings":
             self.show_settings_section()
 
@@ -541,39 +571,57 @@ class YouTubeDownloaderGUI:
                                      style='Custom.TLabel', font=('Segoe UI', 9))
         self.status_label.pack(anchor=tk.W, pady=(0, 10))
 
-        # Log
-        log_frame = ttk.Frame(self.content_area, style='Card.TFrame', padding="15")
-        log_frame.pack(fill=tk.BOTH, expand=True)
+    def show_log_section(self):
+        """Mostra la sezione LOG in una finestra grande e leggibile"""
+        # Titolo
+        title_label = ttk.Label(self.content_area, text="📋 Log di Sistema",
+                               style='Title.TLabel', font=('Segoe UI', 18, 'bold'))
+        title_label.pack(anchor=tk.W, pady=(0, 20))
 
-        # Header log con pulsante copia
-        log_header = tk.Frame(log_frame, bg=self.frame_color)
-        log_header.pack(fill=tk.X, pady=(0, 5))
+        # Card principale per il log
+        log_card = ttk.Frame(self.content_area, style='Card.TFrame', padding="20")
+        log_card.pack(fill=tk.BOTH, expand=True)
 
-        ttk.Label(log_header, text="📋 Log:", style='Card.TLabel',
-                 font=('Segoe UI', 10, 'bold')).pack(side=tk.LEFT)
+        # Header con pulsanti
+        header_frame = tk.Frame(log_card, bg=self.frame_color)
+        header_frame.pack(fill=tk.X, pady=(0, 15))
 
-        copy_log_btn = tk.Button(log_header, text="📋 Copia Log",
-                                command=self.copy_log_to_clipboard,
-                                bg=self.frame_color, fg=self.accent_color,
-                                font=('Segoe UI', 8, 'bold'),
-                                relief=tk.FLAT, bd=0, padx=10, pady=2,
-                                cursor='hand2')
-        copy_log_btn.pack(side=tk.RIGHT)
+        # Info label
+        info_label = ttk.Label(header_frame,
+                              text="Log completo di tutte le operazioni dell'applicazione",
+                              style='Card.TLabel',
+                              font=('Segoe UI', 10))
+        info_label.pack(side=tk.LEFT)
 
-        self.log_text = scrolledtext.ScrolledText(log_frame, height=10,
-                                                  bg=self.bg_color, fg=self.fg_color,
-                                                  font=('Consolas', 9),
-                                                  relief=tk.FLAT, bd=5,
-                                                  insertbackground=self.fg_color,
-                                                  wrap=tk.WORD)
-        self.log_text.pack(fill=tk.BOTH, expand=True)
+        # Pulsanti azione
+        button_frame = tk.Frame(header_frame, bg=self.frame_color)
+        button_frame.pack(side=tk.RIGHT)
 
-        self.log_text.tag_config('info', foreground=self.accent_color)
-        self.log_text.tag_config('success', foreground=self.success_color)
-        self.log_text.tag_config('error', foreground=self.error_color)
+        # Pulsante Copia Log
+        copy_btn = tk.Button(button_frame, text="📋 Copia Log",
+                            command=self.copy_log_to_clipboard,
+                            bg=self.accent_color, fg='white',
+                            font=('Segoe UI', 9, 'bold'),
+                            relief=tk.FLAT, bd=0, padx=15, pady=8,
+                            cursor='hand2')
+        copy_btn.pack(side=tk.LEFT, padx=5)
 
-        self.log("✨ YouTube Downloader Premium v2.1.2 pronto!", 'success')
-        self.log("🎬 FIX: Download HD/720p/1080p ora funzionante!", 'info')
+        # Pulsante Pulisci Log
+        clear_btn = tk.Button(button_frame, text="🗑️ Pulisci Log",
+                             command=self.clear_log,
+                             bg=self.error_color, fg='white',
+                             font=('Segoe UI', 9, 'bold'),
+                             relief=tk.FLAT, bd=0, padx=15, pady=8,
+                             cursor='hand2')
+        clear_btn.pack(side=tk.LEFT, padx=5)
+
+        # Frame per il log text
+        log_text_frame = tk.Frame(log_card, bg=self.frame_color, bd=2, relief=tk.FLAT)
+        log_text_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Rimuovi il log dal suo container corrente e mettilo nel nuovo frame
+        self.log_text.pack_forget()
+        self.log_text.pack(in_=log_text_frame, fill=tk.BOTH, expand=True, padx=2, pady=2)
 
     def show_library_section(self):
         """Mostra la sezione libreria con ricerca"""
@@ -1076,7 +1124,7 @@ class YouTubeDownloaderGUI:
                  font=('Segoe UI', 12, 'bold')).pack(anchor=tk.W, pady=(0, 15))
 
         about_text = """
-        YouTube Downloader Premium v2.1.2
+        YouTube Downloader Premium v2.1.3
 
         Funzionalità:
         • Download video, audio e sottotitoli
@@ -1084,6 +1132,7 @@ class YouTubeDownloaderGUI:
         • Visual Summary Generator
         • Database SQLite integrato
         • Fix HD: Download in 720p/1080p funzionante
+        • Sezione LOG separata con interfaccia grande
 
         Creato con ❤️ da Claude Code per Gimmy
         """
@@ -1118,6 +1167,13 @@ class YouTubeDownloaderGUI:
             self.root.clipboard_append(log_content)
             self.root.update()
             messagebox.showinfo("Copiato", "Log copiato nella clipboard!")
+
+    def clear_log(self):
+        """Pulisce il contenuto del log"""
+        if hasattr(self, 'log_text'):
+            if messagebox.askyesno("Conferma", "Vuoi davvero cancellare tutto il log?"):
+                self.log_text.delete("1.0", tk.END)
+                self.log("✨ Log pulito!", 'success')
 
     def strip_ansi_codes(self, text):
         """Rimuove tutti i codici ANSI di escape dal testo"""
